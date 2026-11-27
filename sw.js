@@ -1,5 +1,5 @@
 // Bump VERSION whenever any file below changes, so phones pick up the new build.
-const VERSION = 'rooz-v2';
+const VERSION = 'rooz-v3';
 const FILES = [
   '.',
   'index.html',
