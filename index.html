@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16212c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="روز من">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>روز من</title>
+<style>
+/* VOICE everyday: a personal daily cockpit, opened many times a day on phone and laptop
+   IDEA a flight strip board: each block of the day is a coloured strip you tick off
+   PICTURE today's timeline itself, the current strip lit, at the top
+   COLOUR white ground, ink slate, one colour per kind of work; coral only for overload
+   TYPE Vazirmatn 800 for times and titles, Vazirmatn 400 for text
+   LAYOUT timeline 3/5 beside a side panel of counters, capacity and today's tasks; sections below; stacked on phone */
+@font-face{font-family:Vazirmatn;src:url(fonts/Vazirmatn-UI-FD-Regular.woff2) format('woff2');font-weight:400 500;font-display:swap}
+@font-face{font-family:Vazirmatn;src:url(fonts/Vazirmatn-UI-FD-Bold.woff2) format('woff2');font-weight:600 900;font-display:swap}
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0e151c);--ink:light-dark(#16212c,#e3eaf1);--mut:light-dark(#5b6b7a,#98a8b8);--line:light-dark(#dfe6ec,#243241);--panel:light-dark(#f4f7f9,#141e28);--hot:light-dark(#d6452a,#ff7a5c);--hotsoft:light-dark(#fde5df,#3a1c16);--ok:light-dark(#11806f,#43c6a8);--soft:light-dark(#dff2ee,#13302c);
+--life:light-dark(#b8c3cd,#4a5866);--food:light-dark(#3a9d4f,#5cc472);--mentee:light-dark(#d99a00,#f0b72f);--deep:light-dark(#1d3a8a,#7d9bf0);--course:light-dark(#c2185b,#f06292);--out:light-dark(#0f8a7e,#3cc9b8);--ops:light-dark(#1f7bbf,#5fb2ee);--meet:light-dark(#e4572e,#ff8a65);--buf:light-dark(#8a97a6,#7b8a99);--rev:light-dark(#4b5563,#a3adba)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Vazirmatn,Tahoma,sans-serif;overflow-x:clip}
+.band{padding-block:clamp(18px,3vw,36px);padding-left:max(4vw,16px,env(safe-area-inset-left));padding-right:max(4vw,16px,env(safe-area-inset-right))}
+.wrap{max-width:1240px;margin-inline:auto}
+h1,h2,h3{font-weight:800;line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,3.6vw,38px)}
+h2{font-size:22px;margin-bottom:12px}
+h3{font-size:17px;margin-bottom:8px}
+.top{padding-top:max(clamp(18px,3vw,36px),env(safe-area-inset-top));display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.nav{display:flex;gap:6px;align-items:center}
+.now{font-size:15px;color:var(--mut)}
+.now b{color:var(--ink)}
+button{font:inherit;font-size:15px;min-height:44px;min-width:44px;padding:6px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button:hover{background:var(--panel)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ok);outline-offset:1px}
+button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.banner{background:var(--soft);border-radius:12px;padding:10px 14px;margin-top:14px;font-size:15px}
+.banner.hot{background:var(--hotsoft)}
+.main{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:24px;align-items:start}
+@media(max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+.tl{display:grid;gap:6px}
+.st{display:grid;grid-template-columns:4.2em 8px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;border:1px solid transparent}
+.st .tm{font-weight:800;font-size:17px;line-height:1.1;white-space:nowrap}
+.st .tm small{display:block;font-weight:400;font-size:13px;color:var(--mut)}
+.st .bar{align-self:stretch;border-radius:4px;background:var(--c)}
+.st .lb b{display:block;font-weight:700}
+.st .lb span{font-size:13px;color:var(--mut)}
+.st .acts{display:flex;gap:4px}
+.st .acts button{padding:4px;min-width:44px;font-size:14px}
+.st .acts button.on{background:var(--c);color:#fff;border-color:var(--c)}
+.st.cur{border-color:var(--ink);background:var(--panel)}
+.st.done{opacity:.55}
+.st.drop .lb b{text-decoration:line-through}
+.st.life{padding-block:4px}
+.st.life .acts{display:none}
+.st.life .tm{font-size:15px}
+@media(max-width:520px){.st{grid-template-columns:3.6em 6px minmax(0,1fr)}.st .acts{grid-column:3;justify-content:flex-start}}
+.side{display:grid;gap:16px}
+.card{background:var(--panel);border-radius:14px;padding:14px 16px}
+.cnt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cnt div{text-align:center}
+.cnt b{display:block;font-size:30px;font-weight:800;line-height:1.1}
+.cnt span{font-size:13px;color:var(--mut)}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meter{height:12px;background:var(--bg);border-radius:6px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.meter.over i{background:var(--hot)}
+.small{font-size:13px;color:var(--mut)}
+.top3{margin:0;padding-inline-start:1.2em}
+.top3 li{margin:4px 0}
+form.add{display:grid;grid-template-columns:minmax(0,1fr) 8em 6.5em auto;gap:8px;align-items:end}
+@media(max-width:620px){form.add{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}form.add .t{grid-column:1/-1}}
+label{display:grid;gap:4px;font-size:13px;color:var(--mut)}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:44px;width:100%}
+textarea{min-height:70px;resize:vertical}
+.chk{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--ink)}
+.chk input{width:22px;min-height:22px}
+.tasks{display:grid;gap:6px;margin-top:12px}
+.tk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.tk .nm b{font-weight:600}
+.tk .nm span{font-size:13px;color:var(--mut)}
+.tk .bt{display:flex;gap:4px;flex-wrap:wrap}
+.tk .bt button{padding:4px 10px;font-size:14px}
+.tk.dn{opacity:.6}
+.tk.dn .nm b{text-decoration:line-through}
+.tk .fin{grid-column:1/-1;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tk .fin input{width:7em}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:var(--panel);margin-inline-end:6px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media(max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right}
+th{font-size:13px;color:var(--mut);font-weight:500}
+td.n{white-space:nowrap;font-weight:700}
+.scroll{overflow-x:auto}
+.en{display:flex;gap:6px;flex-wrap:wrap}
+.en button.on{background:var(--ok);color:#fff;border-color:var(--ok)}
+.alt{background:var(--panel)}
+.alt .card{background:var(--bg)}
+.ok{color:var(--ok)}
+@media(prefers-reduced-motion:reduce){.meter i{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="band top">
+<div>
+<h1 id="dname">روز من</h1>
+<div class="now" id="now"></div>
+</div>
+<div class="nav">
+<button id="prev" aria-label="روز قبل">›</button>
+<button id="today">امروز</button>
+<button id="next" aria-label="روز بعد">‹</button>
+</div>
+</header>
+
+<section class="band">
+<div class="wrap">
+<div id="ban"></div>
+<div class="main" style="margin-top:14px">
+<div>
+<div class="tl" id="tl"></div>
+<div class="row">
+<button id="messy">روزم به هم ریخت</button>
+<button id="undo" hidden>برگرداندن</button>
+</div>
+<p class="small" id="messyNote"></p>
+</div>
+<aside class="side">
+<div class="card" id="top3"></div>
+<div class="card">
+<h3>شمارنده‌های امروز</h3>
+<div class="cnt" id="cnt"></div>
+<div class="row" id="cntBtns">
+<button data-a="out" data-v="1">آوتریچ ۱+</button>
+<button data-a="out" data-v="5">آوتریچ ۵+</button>
+<button data-a="out" data-v="-1">۱−</button>
+<button data-a="course" data-v="30">ضبط ۳۰ دقیقه+</button>
+<button data-a="course" data-v="-30">۳۰−</button>
+</div>
+</div>
+<div class="card" id="cap"></div>
+<div class="card">
+<h3>کارهای امروز</h3>
+<div class="tasks" id="tToday"></div>
+</div>
+</aside>
+</div>
+</div>
+</section>
+
+<section class="band alt" id="tasks">
+<div class="wrap grid2">
+<div class="card">
+<h2>کار جدید</h2>
+<form class="add" id="add" autocomplete="off">
+<label class="t">عنوان<input id="aT" maxlength="140" placeholder="مثلاً: صفحه‌ی خدمات سایت آیدا"></label>
+<label>حوزه<select id="aA"><option>مدورا</option><option>تکانش</option><option>دوره</option><option>زندگی</option></select></label>
+<label>تخمین (دقیقه)<input id="aE" type="number" inputmode="numeric" min="5" step="5" value="30"></label>
+<button class="pri" type="submit">افزودن</button>
+<label class="chk" style="grid-column:1/-1"><input type="checkbox" id="aD" checked> برای همین روز</label>
+</form>
+<h3 style="margin-top:20px">کارهای بعدی</h3>
+<div class="tasks" id="tBack"></div>
+</div>
+<div class="card">
+<h2>ضریب واقعیت</h2>
+<p class="small">هر کار که تمام می‌شود، زمان واقعی‌اش را ثبت کن. بعد از سه کار در هر حوزه، این‌جا معلوم می‌شود تخمین‌هایت چقدر خوش‌بینانه یا بدبینانه است و ظرفیت روز با همین ضریب حساب می‌شود.</p>
+<div class="scroll"><table><thead><tr><th>حوزه</th><th>کار ثبت‌شده</th><th>ضریب</th><th>یعنی</th></tr></thead><tbody id="cal"></tbody></table></div>
+</div>
+</div>
+</section>
+
+<section class="band" id="review">
+<div class="wrap grid2">
+<div class="card">
+<h2>بستن روز</h2>
+<p class="small">سه دقیقه، ساعت ۱۷:۴۵. بعدش لپ‌تاپ بسته.</p>
+<h3>انرژی امروز</h3>
+<div class="en" id="en"></div>
+<label style="margin-top:12px">چه چیزی امروز جلوت را گرفت؟<textarea id="rB" maxlength="400"></textarea></label>
+<h3 style="margin-top:12px">سه کار اصلی فردا</h3>
+<div style="display:grid;gap:6px">
+<input id="r1" maxlength="120" aria-label="کار اول فردا">
+<input id="r2" maxlength="120" aria-label="کار دوم فردا">
+<input id="r3" maxlength="120" aria-label="کار سوم فردا">
+</div>
+<div class="row"><button class="pri" id="rSave">ثبت و بستن روز</button><span class="small" id="rMsg"></span></div>
+</div>
+<div class="card">
+<h2>هفت روز اخیر</h2>
+<div class="scroll"><table><thead><tr><th>روز</th><th>بلوک‌های انجام‌شده</th><th>آوتریچ</th><th>ضبط</th><th>انرژی</th></tr></thead><tbody id="wk"></tbody></table></div>
+<div class="row"><button id="copy">کپی خلاصه‌ی هفته</button><span class="small" id="cMsg"></span></div>
+<h3 style="margin-top:18px">پشتیبان</h3>
+<p class="small" id="store"></p>
+<div class="row"><button id="exp">گرفتن فایل پشتیبان</button><label class="chk" style="min-height:44px"><button type="button" id="impB">وارد کردن پشتیبان</button><input type="file" id="imp" accept="application/json,.json" hidden></label></div>
+<p class="small" id="bMsg"></p>
+</div>
+</div>
+</section>
+
+<script>
+{
+const D2=n=>String(n).padStart(2,'0');
+const fa=s=>String(s).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const faN=(n,d=0)=>Number(n).toLocaleString('fa-IR',{maximumFractionDigits:d});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const key=d=>d.getFullYear()+'-'+D2(d.getMonth()+1)+'-'+D2(d.getDate());
+const pdate=(d,o)=>new Intl.DateTimeFormat('fa-IR-u-ca-persian',o).format(d);
+const mins=t=>{const[a,b]=t.split(':');return +a*60+ +b};
+const AREAS=['مدورا','تکانش','دوره','زندگی'];
+const WORK=['deep','ops','buf'];
+const TN={life:'',food:'غذا',mentee:'منتی‌ها',deep:'بلوک عمیق',course:'ضبط دوره',out:'آوتریچ',ops:'عملیات مدورا',meet:'جلسه',buf:'حاشیه',rev:'بستن روز'};
+
+const L=(s,e,t,n,x='')=>({s,e,t,n,x});
+const MOR=[L('07:00','08:30','life','روتین صبح و رسوندن زر'),L('08:30','10:00','life','باشگاه')];
+const ZAR=[L('18:00','23:00','life','زمان زر','بدون کار؛ تلفن بیرون از اتاق خواب')];
+const ZARSUN=[L('18:00','19:00','life','زمان زر'),L('19:00','20:00','meet','جلسه‌ی هفتگی شرکای مدورا'),L('20:00','23:00','life','زمان زر','بدون کار؛ تلفن بیرون از اتاق خواب')];
+const STD=z=>[...MOR,L('10:00','10:30','food','خونه و میان‌وعده'),L('10:30','11:30','mentee','منتی‌ها، نوبت ۱','پیام‌های دیروز تا امروز صبح'),L('11:30','13:00','deep','بلوک عمیق: ساخت و توسعه‌ی مدورا','تلفن در اتاق دیگر'),L('13:00','14:00','food','پختن و خوردن ناهار'),L('14:00','14:30','mentee','منتی‌ها، نوبت ۲'),L('14:30','15:30','out','آوتریچ مدورا','هدف: ۳۰ پیام'),L('15:30','16:30','ops','عملیات مدورا','پروژه‌ها، علی و سپهر، جلسه و دمو'),L('16:30','17:00','mentee','منتی‌ها، نوبت ۳ و میان‌وعده'),L('17:00','17:45','buf','حاشیه و یادگیری','اول عقب‌افتاده‌ها، بعد یادگیری'),L('17:45','18:00','rev','بستن روز','مرور و سه کار فردا'),...z];
+const TUE=[...MOR,L('10:00','11:00','life','خرید و خونه'),L('11:00','12:00','mentee','منتی‌ها، نوبت ۱','پیام‌های دیروز تا امروز صبح'),L('12:00','13:30','deep','بلوک عمیق: ساخت و توسعه‌ی مدورا','تلفن در اتاق دیگر'),L('13:30','14:30','food','پختن و خوردن ناهار'),L('14:30','15:00','mentee','منتی‌ها، نوبت ۲'),L('15:00','16:00','out','آوتریچ مدورا','هدف: ۳۰ پیام'),L('16:00','17:00','ops','عملیات مدورا','پروژه‌ها، علی و سپهر، جلسه و دمو'),L('17:00','17:30','mentee','منتی‌ها، نوبت ۳ و میان‌وعده'),L('17:30','17:45','buf','حاشیه'),L('17:45','18:00','rev','بستن روز','مرور و سه کار فردا'),...ZAR];
+const SAT=[...MOR,L('10:00','11:00','life','خرید و خونه'),L('11:00','12:00','mentee','منتی‌ها، نوبت ۱','پیام‌های دیروز تا امروز صبح'),L('12:00','13:00','deep','بلوک عمیق، کوتاه','تلفن در اتاق دیگر'),L('13:00','14:00','meet','جلسه‌ی هفتگی تکانش'),L('14:00','15:00','food','پختن و خوردن ناهار'),L('15:00','15:30','mentee','منتی‌ها، نوبت ۲'),L('15:30','16:30','out','آوتریچ مدورا','هدف: ۳۰ پیام'),L('16:30','17:00','meet','بازبینی هفتگی OKR مدورا','کارنامه‌ی ده‌عددی'),L('17:00','17:30','mentee','منتی‌ها، نوبت ۳ و میان‌وعده'),L('17:30','17:45','buf','حاشیه'),L('17:45','18:00','rev','بستن روز','مرور و سه کار فردا'),...ZAR];
+const THU=(c)=>[...MOR,L('10:00','10:30','food','خونه و میان‌وعده'),L('10:30','11:30','mentee','منتی‌ها، نوبت ۱'),c?L('11:30','13:30','course','ذخیره‌ی ضبط دوره','فقط اگر تمام نشده؛ وگرنه جبران عقب‌افتاده‌ها'):L('11:30','13:30','buf','جبران عقب‌افتاده‌های هفته'),L('13:30','14:30','food','پختن و خوردن ناهار'),L('14:30','15:00','mentee','منتی‌ها، نوبت ۲'),L('15:00','16:00','out','آوتریچ مدورا','هدف: ۳۰ پیام'),L('16:00','16:30','rev','برنامه‌ی هفته‌ی بعد','چه چیزی کار کرد، چه چیزی نه'),L('16:30','17:00','mentee','منتی‌ها، نوبت ۳'),L('17:00','18:00','deep','یادگیری و بهتر کردن ابزارها'),...ZAR];
+const COURSE=z=>[...MOR,L('10:00','10:30','food','خونه و میان‌وعده'),L('10:30','11:00','mentee','منتی‌ها، نوبت ۱ کوتاه'),L('11:00','13:30','course','ضبط دوره، جلسه‌ی ۱','۲.۵ ساعت؛ تلفن خاموش'),L('13:30','14:30','food','پختن و خوردن ناهار'),L('14:30','15:00','mentee','منتی‌ها، نوبت ۲'),L('15:00','17:00','course','ضبط دوره، جلسه‌ی ۲','۲ ساعت'),L('17:00','17:30','mentee','منتی‌ها، نوبت ۳'),L('17:30','17:45','buf','حاشیه','آوتریچ امروز با علی'),L('17:45','18:00','rev','بستن روز','مرور و سه کار فردا'),...z];
+const FRI=[L('00:00','23:59','life','جمعه: تعطیل','استراحت؛ کار نه')];
+const SPECIAL={'2026-11-29':COURSE(ZARSUN),'2026-11-30':COURSE(ZAR),'2026-12-03':THU(true)};
+function tpl(d){const k=key(d);if(SPECIAL[k])return SPECIAL[k];switch(d.getDay()){case 0:return STD(ZARSUN);case 1:case 3:return STD(ZAR);case 2:return TUE;case 4:return THU(false);case 5:return FRI;default:return SAT}}
+const isCourseDay=d=>['2026-11-29','2026-11-30'].includes(key(d));
+
+const S={days:{},tasks:{}};
+try{const c=JSON.parse(localStorage.getItem('rooz-cache')||'null');if(c&&c.days)Object.assign(S,c)}catch(e){}
+const cache=()=>{try{localStorage.setItem('rooz-cache',JSON.stringify(S))}catch(e){}};
+let db=null,view=new Date(),pend={},timers={},qs={};
+const day=k=>S.days[k]||(S.days[k]={b:{},c:{out:0,course:0},r:null,m:false});
+
+function put(path,data){
+cache();
+if(!db)return;
+clearTimeout(timers[path]);pend[path]=1;
+timers[path]=setTimeout(()=>{qs[path]=(qs[path]||Promise.resolve()).then(()=>db.doc(path).set(JSON.parse(JSON.stringify(data)))).catch(e=>note('ذخیره نشد: '+(e&&e.code||'خطا'))).finally(()=>{delete pend[path]})},500);
+}
+function del(path){cache();if(db)qs[path]=(qs[path]||Promise.resolve()).then(()=>db.doc(path).delete()).catch(()=>{})}
+const saveDay=k=>put('days/'+k,day(k));
+const saveTask=id=>put('tasks/'+id,S.tasks[id]);
+function note(t){document.getElementById('store').textContent=t}
+
+function factor(a){const d=Object.values(S.tasks).filter(t=>t.st==='done'&&t.area===a&&t.act>0&&t.est>0);if(d.length<3)return{f:1,n:d.length};return{f:d.reduce((s,t)=>s+t.act,0)/d.reduce((s,t)=>s+t.est,0),n:d.length}}
+
+function render(){
+const k=key(view),isToday=k===key(new Date()),B=tpl(view),dd=day(k);
+const nowM=new Date().getHours()*60+new Date().getMinutes();
+document.getElementById('dname').textContent=pdate(view,{weekday:'long',day:'numeric',month:'long'});
+let cur=null,nx=null;
+if(isToday){cur=B.find(b=>mins(b.s)<=nowM&&nowM<mins(b.e));nx=B.find(b=>mins(b.s)>nowM)}
+document.getElementById('now').innerHTML=isToday?(cur?`الان: <b>${esc(cur.n)}</b> · ${faN(mins(cur.e)-nowM)} دقیقه مانده`:'')+(nx?` · بعدی ${fa(nx.s)}: ${esc(nx.n)}`:''):'برنامه‌ی این روز';
+const ban=[];
+if(key(view)<='2026-12-03'){const tot=Object.values(S.days).reduce((s,d)=>s+(d.c?.course||0),0);ban.push(`<div class="banner${isCourseDay(view)?' hot':''}"><b>ضبط دوره:</b> یکشنبه و دوشنبه ۸ و ۹ آذر، ذخیره پنجشنبه ۱۲ آذر. تا الان ${faN(tot)} دقیقه ضبط شده از ۳۰۰ تا ۶۰۰.</div>`)}
+document.getElementById('ban').innerHTML=ban.join('');
+document.getElementById('tl').innerHTML=B.map(b=>{const st=dd.b[b.s]?.s||'';const c=b===cur?' cur':'';return `<div class="st ${b.t==='life'?'life':''}${c}${st==='done'?' done':''}${st==='drop'?' drop':''}" style="--c:var(--${b.t})"><span class="tm">${fa(b.s)}<small>${fa(b.e)}</small></span><span class="bar"></span><span class="lb"><b>${esc(b.n)}</b><span>${esc(TN[b.t])}${b.x?(TN[b.t]?' · ':'')+esc(b.x):''}</span></span>${b.t==='life'?'':`<span class="acts">${[['done','✓','انجام شد'],['half','½','نصفه'],['drop','✕','حذف شد']].map(a=>`<button data-b="${b.s}" data-s="${a[0]}" class="${st===a[0]?'on':''}" aria-label="${a[2]}" title="${a[2]}">${a[1]}</button>`).join('')}</span>`}</div>`}).join('');
+document.getElementById('undo').hidden=!dd.m;
+document.getElementById('messyNote').textContent=dd.m?'ترتیب حذف اعمال شد: عملیات غیرفوری مدورا و حاشیه حذف، نوبت آخر منتی‌ها نصفه. بلوک عمیق، ضبط دوره و آوتریچ دست نخوردند.':'';
+const prevK=key(new Date(view.getTime()-864e5)),pr=S.days[prevK]?.r;
+document.getElementById('top3').innerHTML=`<h3>سه کار اصلی این روز</h3>`+(pr&&pr.top&&pr.top.some(Boolean)?`<ol class="top3">${pr.top.filter(Boolean).map(t=>`<li>${esc(t)}</li>`).join('')}</ol>`:'<p class="small">دیروز در «بستن روز» نوشته نشده. همین الان سه کار را در کارهای امروز اضافه کن.</p>');
+const work=B.filter(b=>!['life','food'].includes(b.t));
+const doneN=work.filter(b=>(dd.b[b.s]?.s)==='done').length;
+const mt=B.filter(b=>b.t==='mentee'),mtD=mt.filter(b=>['done','half'].includes(dd.b[b.s]?.s)).length;
+const outT=B.some(b=>b.t==='out')?30:0;
+document.getElementById('cnt').innerHTML=`<div><b>${faN(dd.c.out)}</b><span>آوتریچ${outT?' از '+faN(outT):'، امروز با علی'}</span></div><div><b>${faN(mtD)}/${faN(mt.length)}</b><span>نوبت منتی‌ها</span></div><div><b>${faN(dd.c.course)}</b><span>دقیقه ضبط</span></div>`;
+const avail=B.filter(b=>WORK.includes(b.t)&&dd.b[b.s]?.s!=='drop'&&dd.b[b.s]?.s!=='done').reduce((s,b)=>s+Math.max(0,mins(b.e)-Math.max(mins(b.s),isToday?nowM:0)),0);
+const tt=Object.entries(S.tasks).filter(([,t])=>t.day===k);
+const plan=tt.filter(([,t])=>t.st!=='done').reduce((s,[,t])=>s+t.est*factor(t.area).f,0);
+const pct=avail?plan/avail:(plan?2:0);
+document.getElementById('cap').innerHTML=`<h3>ظرفیت باقی‌مانده</h3><div class="meter${pct>.8?' over':''}"><i style="width:${Math.min(100,pct*100)}%"></i></div><p class="small">${faN(Math.round(plan))} دقیقه کار برنامه‌ریزی‌شده، با ضریب واقعیت، در ${faN(avail)} دقیقه‌ی باقی‌مانده‌ی بلوک‌های عمیق، عملیات و حاشیه. ${pct>.8?'<b style="color:var(--hot)">بیش از ۸۰٪ پر است؛ یک کار را به روز دیگر ببر.</b>':pct<.4&&avail>60?'جا برای کار بیشتر هست.':'اندازه است.'}</p><p class="small">${faN(doneN)} از ${faN(work.length)} بلوک کاری انجام شده.</p>`;
+document.getElementById('tToday').innerHTML=tt.length?tt.sort((a,b)=>(a[1].st==='done')-(b[1].st==='done')).map(taskRow).join(''):'<p class="small">کاری برای این روز نیست.</p>';
+const back=Object.entries(S.tasks).filter(([,t])=>t.st!=='done'&&t.day!==k).sort((a,b)=>(a[1].day||'9')<(b[1].day||'9')?-1:1);
+document.getElementById('tBack').innerHTML=back.length?back.map(taskRow).join(''):'<p class="small">چیزی در صف نیست.</p>';
+document.getElementById('cal').innerHTML=AREAS.map(a=>{const f=factor(a);return `<tr><td>${a}</td><td class="n">${faN(f.n)}</td><td class="n">${f.n<3?'—':faN(f.f,2)}</td><td>${f.n<3?'هنوز داده‌ی کافی نیست':f.f>1.1?'کارها '+faN(f.f,1)+' برابر تخمین طول می‌کشند':f.f<.9?'تخمین‌ها بدبینانه‌اند':'تخمین‌ها دقیق‌اند'}</td></tr>`}).join('');
+const r=dd.r||{};
+document.getElementById('en').innerHTML=[1,2,3,4,5].map(n=>`<button data-en="${n}" class="${r.en===n?'on':''}">${faN(n)}</button>`).join('');
+if(document.activeElement?.closest?.('#review')==null){document.getElementById('rB').value=r.bl||'';['r1','r2','r3'].forEach((id,i)=>document.getElementById(id).value=(r.top||[])[i]||'')}
+document.getElementById('rMsg').textContent=r.saved?'این روز بسته شده.':'';
+renderWeek();
+}
+function taskRow([id,t]){
+const f=factor(t.area),adj=t.est*f.f,dn=t.st==='done';
+return `<div class="tk${dn?' dn':''}"><div class="nm"><b>${esc(t.t)}</b><br><span><span class="tag">${esc(t.area)}</span>${dn?`واقعی ${faN(t.act||0)} دقیقه از تخمین ${faN(t.est)}`:`تخمین ${faN(t.est)} دقیقه${f.n>=3&&Math.abs(f.f-1)>.05?' ← با ضریب '+faN(Math.round(adj)):''}`}${t.day&&t.day!==key(view)?' · '+esc(pdate(new Date(t.day+'T12:00'),{weekday:'short',day:'numeric',month:'short'})):''}</span></div><div class="bt">${dn?`<button data-t="${id}" data-x="reopen">برگرداندن</button>`:`<button data-t="${id}" data-x="fin">تمام شد</button><button data-t="${id}" data-x="move">${t.day===key(view)?'فردا':'همین روز'}</button>`}<button data-t="${id}" data-x="del" aria-label="حذف">✕</button></div>${openFin===id?`<div class="fin"><label>چند دقیقه طول کشید؟<input id="finI" type="number" inputmode="numeric" min="1" value="${t.est}"></label><button class="pri" data-t="${id}" data-x="save">ثبت</button></div>`:''}</div>`}
+let openFin=null;
+function renderWeek(){
+const rows=[];let txt='خلاصه‌ی هفت روز اخیر\n';
+for(let i=6;i>=0;i--){const d=new Date(view.getTime()-i*864e5),k=key(d),dd=S.days[k],B=tpl(d).filter(b=>!['life','food'].includes(b.t));const dn=dd?B.filter(b=>dd.b[b.s]?.s==='done').length:0;const nm=pdate(d,{weekday:'short',day:'numeric',month:'short'});rows.push(`<tr><td>${esc(nm)}${dd?.m?' · به هم ریخت':''}</td><td class="n">${faN(dn)}/${faN(B.length)}</td><td class="n">${faN(dd?.c?.out||0)}</td><td class="n">${faN(dd?.c?.course||0)}</td><td class="n">${dd?.r?.en?faN(dd.r.en):'—'}</td></tr>`);txt+=`${nm}: بلوک ${dn}/${B.length}، آوتریچ ${dd?.c?.out||0}، ضبط ${dd?.c?.course||0} دقیقه، انرژی ${dd?.r?.en||'-'}${dd?.m?'، روز به هم ریخت':''}${dd?.r?.bl?'، مانع: '+dd.r.bl:''}\n`}
+document.getElementById('wk').innerHTML=rows.join('');
+renderWeek.txt=txt;
+}
+
+document.addEventListener('click',e=>{
+const t=e.target.closest('button');if(!t)return;
+const k=key(view),dd=day(k);
+if(t.dataset.b){const s=t.dataset.s;dd.b[t.dataset.b]=dd.b[t.dataset.b]?.s===s?{}:{s};saveDay(k);render();return}
+if(t.dataset.a){const a=t.dataset.a;dd.c[a]=Math.max(0,(dd.c[a]||0)+ +t.dataset.v);saveDay(k);render();return}
+if(t.dataset.en){dd.r={...(dd.r||{}),en:+t.dataset.en};saveDay(k);render();return}
+if(t.dataset.t){const id=t.dataset.t,x=t.dataset.x,T=S.tasks[id];if(!T)return;
+if(x==='fin'){openFin=id;render();document.getElementById('finI')?.focus();return}
+if(x==='save'){const v=+document.getElementById('finI').value;T.st='done';T.act=v>0?v:T.est;T.done=Date.now();openFin=null}
+if(x==='reopen'){T.st='open';delete T.act}
+if(x==='move'){T.day=T.day===k?key(new Date(view.getTime()+864e5)):k}
+if(x==='del'){delete S.tasks[id];del('tasks/'+id);render();return}
+saveTask(id);render();return}
+});
+document.getElementById('prev').onclick=()=>{view=new Date(view.getTime()-864e5);openFin=null;render()};
+document.getElementById('next').onclick=()=>{view=new Date(view.getTime()+864e5);openFin=null;render()};
+document.getElementById('today').onclick=()=>{view=new Date();render()};
+document.getElementById('messy').onclick=()=>{const k=key(view),dd=day(k),B=tpl(view);dd.prevB=JSON.parse(JSON.stringify(dd.b));B.forEach(b=>{if(['ops','buf'].includes(b.t)&&dd.b[b.s]?.s!=='done')dd.b[b.s]={s:'drop'}});const lm=B.filter(b=>b.t==='mentee').pop();if(lm&&dd.b[lm.s]?.s!=='done')dd.b[lm.s]={s:'half'};dd.m=true;saveDay(k);render()};
+document.getElementById('undo').onclick=()=>{const k=key(view),dd=day(k);dd.b=dd.prevB||{};delete dd.prevB;dd.m=false;saveDay(k);render()};
+document.getElementById('add').addEventListener('submit',e=>{e.preventDefault();const t=document.getElementById('aT').value.trim();if(!t)return;const est=Math.max(5,+document.getElementById('aE').value||30);const id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.tasks[id]={t,area:document.getElementById('aA').value,est,st:'open',day:document.getElementById('aD').checked?key(view):null,ts:Date.now()};saveTask(id);document.getElementById('aT').value='';render()});
+document.getElementById('rSave').onclick=()=>{const k=key(view),dd=day(k);dd.r={...(dd.r||{}),bl:document.getElementById('rB').value.trim(),top:['r1','r2','r3'].map(i=>document.getElementById(i).value.trim()),saved:true};saveDay(k);render()};
+document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(renderWeek.txt);document.getElementById('cMsg').textContent='کپی شد.'}catch(e){document.getElementById('cMsg').textContent='کپی نشد؛ متن را دستی انتخاب کن.'}};
+
+render();
+setInterval(()=>{if(key(view)===key(new Date())&&!document.activeElement?.matches?.('input,textarea,select'))render()},60000);
+
+note('داده‌ها روی همین دستگاه ذخیره می‌شوند. برای بردن داده بین گوشی و لپ‌تاپ، از یکی فایل پشتیبان بگیر و در دیگری واردش کن.');
+document.getElementById('exp').onclick=()=>{const blob=new Blob([JSON.stringify({app:'rooz-man',v:1,at:new Date().toISOString(),...S},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rooz-man-'+key(new Date())+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);document.getElementById('bMsg').textContent='فایل پشتیبان ساخته شد.'};
+document.getElementById('impB').onclick=()=>document.getElementById('imp').click();
+document.getElementById('imp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(j.app!=='rooz-man'||typeof j.days!=='object'||typeof j.tasks!=='object')throw 0;let nd=0,nt=0;for(const k in j.days)if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&j.days[k]&&typeof j.days[k]==='object'){const d=j.days[k];S.days[k]={b:d.b&&typeof d.b==='object'?d.b:{},c:{out:+d.c?.out||0,course:+d.c?.course||0},r:d.r&&typeof d.r==='object'?{en:+d.r.en||undefined,bl:String(d.r.bl||'').slice(0,400),top:Array.isArray(d.r.top)?d.r.top.slice(0,3).map(x=>String(x).slice(0,120)):[],saved:!!d.r.saved}:null,m:!!d.m};nd++}for(const k in j.tasks)if(/^t[a-z0-9]+$/.test(k)&&j.tasks[k]&&typeof j.tasks[k]==='object'){const t=j.tasks[k];S.tasks[k]={t:String(t.t||'').slice(0,140),area:AREAS.includes(t.area)?t.area:'زندگی',est:Math.max(5,+t.est||30),act:+t.act>0?+t.act:undefined,st:t.st==='done'?'done':'open',day:/^\d{4}-\d{2}-\d{2}$/.test(t.day)?t.day:null,ts:+t.ts||Date.now()};nt++}cache();render();document.getElementById('bMsg').textContent=`وارد شد: ${faN(nd)} روز و ${faN(nt)} کار.`}catch(err){document.getElementById('bMsg').textContent='این فایل پشتیبان «روز من» نیست.'}e.target.value=''};
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
